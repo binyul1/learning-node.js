@@ -39,3 +39,27 @@ jobs:
             binyul11/learning-node.js:latest
             binyul11/learning-node.js:${{ github.sha }}
             binyul11/learning-node.js:${{ github.run_number }}
+  deploy:
+    name: Deploy with Docker Compose
+    needs: build
+    environment: test
+    runs-on: self-hosted
+
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose pull
+          docker compose up -d --remove-orphans
+          docker compose ps
